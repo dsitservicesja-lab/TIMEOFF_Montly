@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<p>Logged in as <strong>{{ user.username }}</strong> (admin)</p>
+<p><a href="{{ url_for('dashboard') }}">Back to Dashboard</a></p>
+<div class="card">
+  <h2>Branches & Supervisors</h2>
+  <table>
+    <tr><th>Branch</th><th>Supervisor</th></tr>
+    {% for b in branches %}
+    <tr><td>{{ b.name }}</td><td>{{ b.supervisor_name or 'Unassigned' }}</td></tr>
+    {% endfor %}
+  </table>
+</div>
+
+<div class="card">
+  <h2>Users</h2>
+  <table>
+    <tr><th>User</th><th>Role</th><th>Branch</th></tr>
+    {% for u in users %}
+    <tr><td>{{ u.username }}</td><td>{{ u.role }}</td><td>{{ u.branch_name or '-' }}</td></tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}
