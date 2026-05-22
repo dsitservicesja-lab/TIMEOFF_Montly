@@ -23,22 +23,24 @@ source .venv/bin/activate
 pip install --upgrade pip
 pip install -r requirements.txt
 pip install gunicorn
+sudo chown -R www-data:www-data /opt/timeoff
 ```
 
 ## 3) Set production environment variables
 
-Set a strong secret key before starting the app:
+Create a protected environment file:
 
 ```bash
-export SECRET_KEY='replace-with-a-long-random-secret'
+sudo mkdir -p /etc/timeoff
+echo "SECRET_KEY=replace-with-a-long-random-secret" | sudo tee /etc/timeoff/env > /dev/null
+sudo chown root:www-data /etc/timeoff/env
+sudo chmod 640 /etc/timeoff/env
 ```
 
 ## 4) Test app startup with Gunicorn
 
 ```bash
-cd /opt/timeoff
-source .venv/bin/activate
-gunicorn -w 2 -b 127.0.0.1:8000 "app:create_app()"
+sudo -u www-data bash -lc 'cd /opt/timeoff && source .venv/bin/activate && source /etc/timeoff/env && gunicorn -w 2 -b 127.0.0.1:8000 "app:create_app()"'
 ```
 
 If startup works, stop Gunicorn (`Ctrl+C`) and continue.
@@ -56,7 +58,7 @@ After=network.target
 User=www-data
 Group=www-data
 WorkingDirectory=/opt/timeoff
-Environment="SECRET_KEY=replace-with-a-long-random-secret"
+EnvironmentFile=/etc/timeoff/env
 ExecStart=/opt/timeoff/.venv/bin/gunicorn -w 2 -b 127.0.0.1:8000 "app:create_app()"
 Restart=always
 
@@ -115,4 +117,3 @@ sudo certbot --nginx -d your-domain
 - Check app logs: `sudo journalctl -u timeoff -f`
 - Restart app: `sudo systemctl restart timeoff`
 - Check Nginx logs: `/var/log/nginx/access.log` and `/var/log/nginx/error.log`
-
