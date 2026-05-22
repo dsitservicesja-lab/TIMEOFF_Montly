@@ -21,7 +21,7 @@
         {% for b in branches %}
         <tr>
           <td><strong>{{ b.name }}</strong></td>
-          <td>{{ b.supervisor_name or '<span class="muted">Unassigned</span>' }}</td>
+          <td>{{ b.supervisor_name or '<span class="muted">Unassigned</span>' | safe }}</td>
         </tr>
         {% endfor %}
       </tbody>
