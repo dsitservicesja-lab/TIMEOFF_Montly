@@ -1,24 +1,51 @@
 {% extends "base.html" %}
 {% block content %}
-<p>Logged in as <strong>{{ user.username }}</strong> (admin)</p>
-<p><a href="{{ url_for('dashboard') }}">Back to Dashboard</a></p>
-<div class="card">
-  <h2>Branches & Supervisors</h2>
-  <table>
-    <tr><th>Branch</th><th>Supervisor</th></tr>
-    {% for b in branches %}
-    <tr><td>{{ b.name }}</td><td>{{ b.supervisor_name or 'Unassigned' }}</td></tr>
-    {% endfor %}
-  </table>
+
+<div class="user-badge">
+  {{ user.username }}
+  <span class="role-tag">admin</span>
+</div>
+
+<div class="page-nav">
+  <a href="{{ url_for('dashboard') }}">← Dashboard</a>
 </div>
 
 <div class="card">
-  <h2>Users</h2>
-  <table>
-    <tr><th>User</th><th>Role</th><th>Branch</th></tr>
-    {% for u in users %}
-    <tr><td>{{ u.username }}</td><td>{{ u.role }}</td><td>{{ u.branch_name or '-' }}</td></tr>
-    {% endfor %}
-  </table>
+  <div class="card-title">🏢 Branches &amp; Supervisors</div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Branch</th><th>Supervisor</th></tr>
+      </thead>
+      <tbody>
+        {% for b in branches %}
+        <tr>
+          <td><strong>{{ b.name }}</strong></td>
+          <td>{{ b.supervisor_name or '<span class="muted">Unassigned</span>' | safe }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">👥 Users</div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Username</th><th>Role</th><th>Branch</th></tr>
+      </thead>
+      <tbody>
+        {% for u in users %}
+        <tr>
+          <td>{{ u.username }}</td>
+          <td><span class="badge badge-info">{{ u.role }}</span></td>
+          <td>{{ u.branch_name or '—' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 </div>
 {% endblock %}

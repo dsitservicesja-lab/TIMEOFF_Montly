@@ -1,15 +1,25 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="card">
-  <h2>Login (Demo)</h2>
-  <form method="post">
-    <label for="username">User</label><br />
-    <select id="username" name="username" required>
-      {% for u in users %}
-      <option value="{{ u.username }}">{{ u.username }} ({{ u.role }})</option>
-      {% endfor %}
-    </select><br />
-    <button type="submit">Login</button>
-  </form>
+<div style="max-width: 400px; margin: 3rem auto;">
+  <div class="card" style="padding: 2rem;">
+    <div style="text-align:center; margin-bottom:1.5rem;">
+      <img src="{{ url_for('static', filename='Logo.png') }}" alt="Logo" style="height:56px; margin-bottom:0.75rem;" />
+      <h2 style="font-size:1.3rem; font-weight:700; color:var(--brand-dark);">Sign In</h2>
+      <p class="muted" style="margin-top:0.25rem;">Select your account to continue</p>
+    </div>
+    <form method="post">
+      <div class="form-group">
+        <label for="username">Account</label>
+        <select id="username" name="username" required>
+          {% for u in users %}
+          <option value="{{ u.username }}">{{ u.username }} — {{ u.role }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; margin-top:0.5rem;">
+        Sign In
+      </button>
+    </form>
+  </div>
 </div>
 {% endblock %}

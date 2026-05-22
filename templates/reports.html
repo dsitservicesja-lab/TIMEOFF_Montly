@@ -1,26 +1,44 @@
 {% extends "base.html" %}
 {% block content %}
-<p>Logged in as <strong>{{ user.username }}</strong> ({{ user.role }})</p>
-<p><a href="{{ url_for('dashboard') }}">Back to Dashboard</a></p>
+
+<div class="user-badge">
+  {{ user.username }}
+  <span class="role-tag">{{ user.role }}</span>
+</div>
+
+<div class="page-nav">
+  <a href="{{ url_for('dashboard') }}">← Dashboard</a>
+</div>
+
 <div class="card">
-  <h2>Monthly Report</h2>
-  <form method="get">
-    <label>Month</label>
-    <input type="month" name="month" value="{{ month_filter }}" />
-    <button type="submit">Load</button>
+  <div class="card-title">📊 Monthly Report</div>
+  <form method="get" style="display:flex; align-items:flex-end; gap:0.75rem; margin-bottom:1.25rem; flex-wrap:wrap;">
+    <div class="form-group" style="margin:0;">
+      <label style="margin-bottom:0.3rem; display:block;">Month</label>
+      <input type="month" name="month" value="{{ month_filter }}" style="width:auto;" />
+    </div>
+    <button type="submit" class="btn btn-primary">Load</button>
   </form>
-  <table>
-    <tr><th>Branch</th><th>User</th><th>Approved</th><th>Pending</th><th>Declined</th><th>Allocation</th></tr>
-    {% for row in report_rows %}
-    <tr>
-      <td>{{ row.branch_name or '-' }}</td>
-      <td>{{ row.username }}</td>
-      <td>{{ row.approved_hours }}h</td>
-      <td>{{ row.pending_hours }}h</td>
-      <td>{{ row.declined_hours }}h</td>
-      <td>4.0h</td>
-    </tr>
-    {% endfor %}
-  </table>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Branch</th><th>Employee</th><th>Approved</th><th>Pending</th><th>Declined</th><th>Allocation</th></tr>
+      </thead>
+      <tbody>
+        {% for row in report_rows %}
+        <tr>
+          <td>{{ row.branch_name or '—' }}</td>
+          <td>{{ row.username }}</td>
+          <td><span class="badge badge-approved">{{ row.approved_hours }}h</span></td>
+          <td><span class="badge badge-pending">{{ row.pending_hours }}h</span></td>
+          <td><span class="badge badge-declined">{{ row.declined_hours }}h</span></td>
+          <td><span class="badge badge-info">4.0h</span></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="muted" style="text-align:center; padding:1.5rem;">No data for this month.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 </div>
 {% endblock %}
