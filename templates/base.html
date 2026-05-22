@@ -4,31 +4,329 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Timeoff Monthly</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
-    body { font-family: Arial, sans-serif; margin: 2rem; }
-    .header { display: flex; justify-content: space-between; align-items: center; }
-    .card { border: 1px solid #ddd; border-radius: 8px; padding: 1rem; margin: 1rem 0; }
-    table { border-collapse: collapse; width: 100%; }
-    th, td { border: 1px solid #ddd; padding: 0.5rem; text-align: left; }
-    .flash { background: #fff6d5; border: 1px solid #ead38b; padding: 0.6rem; margin-bottom: 1rem; }
-    .muted { color: #666; font-size: 0.9rem; }
-    input, select, button, textarea { padding: 0.4rem; margin: 0.25rem 0; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --brand:       #1d4ed8;
+      --brand-dark:  #1e3a8a;
+      --brand-light: #eff6ff;
+      --success:     #16a34a;
+      --warning:     #d97706;
+      --danger:      #dc2626;
+      --surface:     #ffffff;
+      --bg:          #f1f5f9;
+      --border:      #e2e8f0;
+      --text:        #1e293b;
+      --muted:       #64748b;
+      --radius:      10px;
+      --shadow:      0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.05);
+      --shadow-md:   0 4px 12px rgba(0,0,0,.10);
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 0.9375rem;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ── Navbar ── */
+    .navbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .navbar-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+    }
+    .navbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+    }
+    .navbar-brand img {
+      height: 40px;
+      width: auto;
+      object-fit: contain;
+    }
+    .navbar-brand span {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--brand-dark);
+      white-space: nowrap;
+    }
+    .navbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .navbar-actions a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      padding: 0.35rem 0.75rem;
+      border-radius: 6px;
+      transition: background .15s, color .15s;
+    }
+    .navbar-actions a:hover { background: var(--brand-light); color: var(--brand); }
+    .btn-logout {
+      background: #fef2f2;
+      color: var(--danger) !important;
+    }
+    .btn-logout:hover { background: #fee2e2 !important; color: var(--danger) !important; }
+
+    /* ── Page container ── */
+    .page { max-width: 1200px; margin: 2rem auto; padding: 0 1.5rem; }
+
+    /* ── Flash messages ── */
+    .flash {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: #fefce8;
+      border: 1px solid #fde047;
+      border-left: 4px solid #eab308;
+      color: #713f12;
+      padding: 0.75rem 1rem;
+      border-radius: var(--radius);
+      margin-bottom: 1.25rem;
+      font-size: 0.9rem;
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: var(--shadow);
+    }
+    .card-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 1.1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* ── Nav links inside pages ── */
+    .page-nav {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .page-nav a {
+      color: var(--brand);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      padding: 0.4rem 0.85rem;
+      border-radius: 6px;
+      border: 1px solid var(--brand);
+      transition: background .15s, color .15s;
+    }
+    .page-nav a:hover { background: var(--brand); color: #fff; }
+
+    /* ── User info badge ── */
+    .user-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--brand-light);
+      color: var(--brand-dark);
+      border-radius: 999px;
+      padding: 0.3rem 0.9rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 1.25rem;
+    }
+    .user-badge .role-tag {
+      background: var(--brand);
+      color: #fff;
+      border-radius: 999px;
+      padding: 0.1rem 0.55rem;
+      font-size: 0.75rem;
+      text-transform: capitalize;
+    }
+
+    /* ── Tables ── */
+    .table-wrap { overflow-x: auto; }
+    table { border-collapse: collapse; width: 100%; font-size: 0.875rem; }
+    thead tr { background: var(--bg); }
+    th {
+      padding: 0.65rem 0.9rem;
+      text-align: left;
+      font-weight: 600;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      color: var(--muted);
+      border-bottom: 2px solid var(--border);
+    }
+    td {
+      padding: 0.65rem 0.9rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: #f8fafc; }
+
+    /* ── Status badges ── */
+    .badge {
+      display: inline-block;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: capitalize;
+    }
+    .badge-pending  { background: #fef9c3; color: #854d0e; }
+    .badge-approved { background: #dcfce7; color: #14532d; }
+    .badge-declined { background: #fee2e2; color: #7f1d1d; }
+    .badge-info     { background: var(--brand-light); color: var(--brand-dark); }
+
+    /* ── Forms ── */
+    .form-group { margin-bottom: 1rem; }
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.3rem;
+    }
+    input[type="date"],
+    input[type="number"],
+    input[type="month"],
+    input[type="text"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 0.55rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      color: var(--text);
+      background: var(--surface);
+      transition: border-color .15s, box-shadow .15s;
+      outline: none;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--brand);
+      box-shadow: 0 0 0 3px rgba(29,78,216,.12);
+    }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.5rem 1.1rem;
+      border-radius: 7px;
+      border: none;
+      font-family: inherit;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: opacity .15s, transform .1s;
+    }
+    .btn:active { transform: scale(.98); }
+    .btn-primary  { background: var(--brand);   color: #fff; }
+    .btn-primary:hover  { opacity: .88; }
+    .btn-success  { background: var(--success); color: #fff; }
+    .btn-success:hover  { opacity: .88; }
+    .btn-danger   { background: var(--danger);  color: #fff; }
+    .btn-danger:hover   { opacity: .88; }
+    .btn-outline  { background: transparent; color: var(--brand); border: 1.5px solid var(--brand); }
+    .btn-outline:hover  { background: var(--brand-light); }
+    .btn-sm { padding: 0.3rem 0.7rem; font-size: 0.8rem; }
+
+    /* ── Progress bar ── */
+    .progress-bar-wrap {
+      background: var(--bg);
+      border-radius: 999px;
+      height: 8px;
+      overflow: hidden;
+      margin-top: 0.4rem;
+    }
+    .progress-bar {
+      height: 100%;
+      border-radius: 999px;
+      background: var(--brand);
+      transition: width .4s ease;
+    }
+    .progress-bar.warn { background: var(--warning); }
+    .progress-bar.full { background: var(--danger); }
+
+    .muted { color: var(--muted); font-size: 0.85rem; }
+
+    /* ── Notifications ── */
+    .notif-item {
+      padding: 0.6rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.875rem;
+    }
+    .notif-item:last-child { border-bottom: none; }
+    .notif-new { font-weight: 600; color: var(--brand-dark); }
+    .notif-dot {
+      display: inline-block;
+      width: 8px; height: 8px;
+      background: var(--brand);
+      border-radius: 50%;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
   </style>
 </head>
 <body>
-  <div class="header">
-    <h1>Monthly Time-off Tracker</h1>
-    {% if session.user_id %}
-      <a href="{{ url_for('logout') }}">Logout</a>
-    {% endif %}
+  <nav class="navbar">
+    <div class="navbar-inner">
+      <a href="{{ url_for('index') }}" class="navbar-brand">
+        <img src="{{ url_for('static', filename='Logo.png') }}" alt="Logo" />
+        <span>Monthly Time-off Tracker</span>
+      </a>
+      <div class="navbar-actions">
+        {% if session.user_id %}
+          <a href="{{ url_for('logout') }}" class="btn-logout">Sign out</a>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+
+  <div class="page">
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for msg in messages %}
+          <div class="flash">⚠ {{ msg }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
   </div>
-  {% with messages = get_flashed_messages() %}
-    {% if messages %}
-      {% for msg in messages %}
-        <div class="flash">{{ msg }}</div>
-      {% endfor %}
-    {% endif %}
-  {% endwith %}
-  {% block content %}{% endblock %}
 </body>
 </html>

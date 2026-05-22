@@ -1,108 +1,153 @@
 {% extends "base.html" %}
 {% block content %}
-<p>
-  Logged in as <strong>{{ user.username }}</strong> ({{ user.role }})
-  {% if user.branch_id %}- branch user{% endif %}
-</p>
-<p>
-  <a href="{{ url_for('reports') }}">Reports</a>
-  {% if user.role == 'admin' %} | <a href="{{ url_for('admin') }}">Admin Panel</a>{% endif %}
-</p>
+
+<div class="user-badge">
+  {{ user.username }}
+  <span class="role-tag">{{ user.role }}</span>
+</div>
+
+<div class="page-nav">
+  <a href="{{ url_for('reports') }}">📊 Reports</a>
+  {% if user.role == 'admin' %}
+  <a href="{{ url_for('admin') }}">⚙ Admin Panel</a>
+  {% endif %}
+</div>
 
 {% if user.role in ['employee', 'supervisor'] %}
 <div class="card">
-  <h3>Request Time-off</h3>
-  <p class="muted">Monthly allocation: {{ monthly_allocation }}h | Used in {{ month_filter }}: {{ month_usage }}h</p>
-  <form method="post" action="{{ url_for('request_timeoff') }}">
-    <label>Date</label><br />
-    <input type="date" name="request_date" required /><br />
-    <label>Hours</label><br />
-    <input type="number" step="0.5" min="0.5" max="4" name="hours" required /><br />
-    <label>Reason</label><br />
-    <textarea name="reason" rows="2"></textarea><br />
-    <button type="submit">Submit request</button>
+  <div class="card-title">🗓 Request Time-off</div>
+
+  {% set pct = (month_usage / monthly_allocation * 100) | round(0) | int %}
+  <p class="muted" style="margin-bottom:0.5rem;">
+    Monthly allocation: <strong>{{ monthly_allocation }}h</strong> &nbsp;|&nbsp;
+    Used in <strong>{{ month_filter }}</strong>: <strong>{{ month_usage }}h</strong>
+  </p>
+  <div class="progress-bar-wrap" style="margin-bottom:1.25rem;">
+    <div class="progress-bar {% if pct >= 100 %}full{% elif pct >= 75 %}warn{% endif %}"
+         style="width: {{ [pct, 100] | min }}%;"></div>
+  </div>
+
+  <form method="post" action="{{ url_for('request_timeoff') }}" style="display:grid; grid-template-columns:1fr 1fr; gap:0 1rem;">
+    <div class="form-group">
+      <label>Date</label>
+      <input type="date" name="request_date" required />
+    </div>
+    <div class="form-group">
+      <label>Hours</label>
+      <input type="number" step="0.5" min="0.5" max="4" name="hours" required />
+    </div>
+    <div class="form-group" style="grid-column:1/-1;">
+      <label>Reason <span class="muted">(optional)</span></label>
+      <textarea name="reason" rows="2"></textarea>
+    </div>
+    <div style="grid-column:1/-1;">
+      <button type="submit" class="btn btn-primary">Submit Request</button>
+    </div>
   </form>
 </div>
 {% endif %}
 
 <div class="card">
-  <h3>My Requests</h3>
-  <table>
-    <tr><th>Date</th><th>Hours</th><th>Status</th><th>Decision</th><th>Reason</th></tr>
-    {% for r in own_requests %}
-    <tr>
-      <td>{{ r.request_date }}</td>
-      <td>{{ r.hours }}</td>
-      <td>{{ r.status }}</td>
-      <td>{% if r.decision_username %}{{ r.decision_username }}{% endif %}</td>
-      <td>{{ r.reason or '' }}</td>
-    </tr>
-    {% else %}
-    <tr><td colspan="5">No requests yet.</td></tr>
-    {% endfor %}
-  </table>
+  <div class="card-title">📋 My Requests</div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Date</th><th>Hours</th><th>Status</th><th>Decided by</th><th>Reason</th></tr>
+      </thead>
+      <tbody>
+        {% for r in own_requests %}
+        <tr>
+          <td>{{ r.request_date }}</td>
+          <td>{{ r.hours }}h</td>
+          <td><span class="badge badge-{{ r.status }}">{{ r.status }}</span></td>
+          <td>{{ r.decision_username or '—' }}</td>
+          <td class="muted">{{ r.reason or '—' }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" class="muted" style="text-align:center; padding:1.5rem;">No requests yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 </div>
 
 {% if user.role == 'supervisor' %}
 <div class="card">
-  <h3>Pending Branch Requests</h3>
-  <table>
-    <tr><th>User</th><th>Date</th><th>Hours</th><th>Reason</th><th>Action</th></tr>
-    {% for r in pending_for_supervisor %}
-    <tr>
-      <td>{{ r.username }}</td>
-      <td>{{ r.request_date }}</td>
-      <td>{{ r.hours }}</td>
-      <td>{{ r.reason or '' }}</td>
-      <td>
-        <form method="post" action="{{ url_for('supervisor_decide', request_id=r.id) }}" style="display:inline;">
-          <input type="hidden" name="decision" value="approved" />
-          <button type="submit">Approve</button>
-        </form>
-        <form method="post" action="{{ url_for('supervisor_decide', request_id=r.id) }}" style="display:inline;">
-          <input type="hidden" name="decision" value="declined" />
-          <button type="submit">Decline</button>
-        </form>
-      </td>
-    </tr>
-    {% else %}
-    <tr><td colspan="5">No pending requests.</td></tr>
-    {% endfor %}
-  </table>
+  <div class="card-title">⏳ Pending Branch Requests</div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Employee</th><th>Date</th><th>Hours</th><th>Reason</th><th>Action</th></tr>
+      </thead>
+      <tbody>
+        {% for r in pending_for_supervisor %}
+        <tr>
+          <td><strong>{{ r.username }}</strong></td>
+          <td>{{ r.request_date }}</td>
+          <td>{{ r.hours }}h</td>
+          <td class="muted">{{ r.reason or '—' }}</td>
+          <td style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+            <form method="post" action="{{ url_for('supervisor_decide', request_id=r.id) }}">
+              <input type="hidden" name="decision" value="approved" />
+              <button type="submit" class="btn btn-success btn-sm">✓ Approve</button>
+            </form>
+            <form method="post" action="{{ url_for('supervisor_decide', request_id=r.id) }}">
+              <input type="hidden" name="decision" value="declined" />
+              <button type="submit" class="btn btn-danger btn-sm">✕ Decline</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" class="muted" style="text-align:center; padding:1.5rem;">No pending requests.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 </div>
 {% endif %}
 
 {% if user.role == 'admin' %}
 <div class="card">
-  <h3>All Requests</h3>
-  <table>
-    <tr><th>User</th><th>Branch</th><th>Date</th><th>Hours</th><th>Status</th></tr>
-    {% for r in all_requests %}
-    <tr>
-      <td>{{ r.username }}</td>
-      <td>{{ r.branch_name }}</td>
-      <td>{{ r.request_date }}</td>
-      <td>{{ r.hours }}</td>
-      <td>{{ r.status }}</td>
-    </tr>
-    {% else %}
-    <tr><td colspan="5">No requests yet.</td></tr>
-    {% endfor %}
-  </table>
+  <div class="card-title">🗂 All Requests</div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Employee</th><th>Branch</th><th>Date</th><th>Hours</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        {% for r in all_requests %}
+        <tr>
+          <td>{{ r.username }}</td>
+          <td>{{ r.branch_name }}</td>
+          <td>{{ r.request_date }}</td>
+          <td>{{ r.hours }}h</td>
+          <td><span class="badge badge-{{ r.status }}">{{ r.status }}</span></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" class="muted" style="text-align:center; padding:1.5rem;">No requests yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 </div>
 {% endif %}
 
 <div class="card">
-  <h3>Notifications</h3>
-  <form method="post" action="{{ url_for('mark_notifications_read') }}">
-    <button type="submit">Mark all as read</button>
-  </form>
-  <ul>
-    {% for n in notifications %}
-      <li>{% if n.is_read == 0 %}<strong>[New]</strong> {% endif %}{{ n.message }} <span class="muted">{{ n.created_at }}</span></li>
-    {% else %}
-      <li>No notifications.</li>
-    {% endfor %}
-  </ul>
+  <div class="card-title" style="justify-content:space-between;">
+    <span>🔔 Notifications</span>
+    <form method="post" action="{{ url_for('mark_notifications_read') }}">
+      <button type="submit" class="btn btn-outline btn-sm">Mark all read</button>
+    </form>
+  </div>
+  {% for n in notifications %}
+  <div class="notif-item {% if n.is_read == 0 %}notif-new{% endif %}">
+    {% if n.is_read == 0 %}<span class="notif-dot"></span>{% endif %}
+    {{ n.message }}
+    <span class="muted" style="margin-left:0.5rem;">{{ n.created_at[:16].replace('T',' ') }}</span>
+  </div>
+  {% else %}
+  <p class="muted" style="padding:0.5rem 0;">No notifications.</p>
+  {% endfor %}
 </div>
+
 {% endblock %}
