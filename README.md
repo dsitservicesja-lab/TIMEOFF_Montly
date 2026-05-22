@@ -32,3 +32,7 @@ Use the login screen to choose a user.
 ```bash
 python -m unittest discover -s tests
 ```
+
+## Deployment
+
+See [`DEPLOY.md`](DEPLOY.md) for production deployment steps.
