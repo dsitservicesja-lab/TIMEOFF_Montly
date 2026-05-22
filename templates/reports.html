@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<p>Logged in as <strong>{{ user.username }}</strong> ({{ user.role }})</p>
+<p><a href="{{ url_for('dashboard') }}">Back to Dashboard</a></p>
+<div class="card">
+  <h2>Monthly Report</h2>
+  <form method="get">
+    <label>Month</label>
+    <input type="month" name="month" value="{{ month_filter }}" />
+    <button type="submit">Load</button>
+  </form>
+  <table>
+    <tr><th>Branch</th><th>User</th><th>Approved</th><th>Pending</th><th>Declined</th><th>Allocation</th></tr>
+    {% for row in report_rows %}
+    <tr>
+      <td>{{ row.branch_name or '-' }}</td>
+      <td>{{ row.username }}</td>
+      <td>{{ row.approved_hours }}h</td>
+      <td>{{ row.pending_hours }}h</td>
+      <td>{{ row.declined_hours }}h</td>
+      <td>4.0h</td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

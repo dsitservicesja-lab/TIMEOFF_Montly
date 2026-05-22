@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h2>Login (Demo)</h2>
+  <form method="post">
+    <label for="username">User</label><br />
+    <select id="username" name="username" required>
+      {% for u in users %}
+      <option value="{{ u.username }}">{{ u.username }} ({{ u.role }})</option>
+      {% endfor %}
+    </select><br />
+    <button type="submit">Login</button>
+  </form>
+</div>
+{% endblock %}
