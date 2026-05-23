@@ -17,7 +17,8 @@ sudo mkdir -p /opt/timeoff
 sudo chown -R $USER:$USER /opt/timeoff
 cd /opt/timeoff
 
-# copy project files here, then:
+# clone project files
+git clone https://github.com/dsitservicesja-lab/TIMEOFF_Montly.git .
 python3 -m venv .venv
 source .venv/bin/activate
 pip install --upgrade pip
@@ -117,3 +118,4 @@ sudo certbot --nginx -d your-domain
 - Check app logs: `sudo journalctl -u timeoff -f`
 - Restart app: `sudo systemctl restart timeoff`
 - Check Nginx logs: `/var/log/nginx/access.log` and `/var/log/nginx/error.log`
+- Pull latest app updates: `/opt/timeoff/update.sh`
